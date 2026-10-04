@@ -85,6 +85,20 @@ def close_ticket(ticket_id):
     db.commit()
 
 
+def delete_ticket(ticket_id):
+    cur.execute("""
+        DELETE FROM replies
+        WHERE ticket_id=?
+    """, (
+        ticket_id,
+    ))
+    cur.execute("""
+        DELETE FROM tickets
+        WHERE id=?
+    """, (
+        ticket_id, ))
+db.commit()
+
 def is_ticket_open(ticket_id):
     row = cur.execute("""
         SELECT status
