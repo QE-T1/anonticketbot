@@ -26,6 +26,13 @@ def init_db():
     )
     """)
 
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS bans(
+        user_id INTEGER PRIMARY KEY,
+        reason TEXT
+    )
+    """)
+
     db.commit()
 
 
@@ -84,6 +91,42 @@ def close_ticket(ticket_id):
 
     db.commit()
 
+
+def ban_user(user_id, reason):
+    cur.execute("""
+        INSERT OR REPLACE INTO bans(
+            user_id,
+            reason
+        )
+        VALUES(?,?)
+    """, (
+        user_id,
+        reason
+    ))
+
+    db.commit()
+
+
+def is_banned(user_id):
+    row = cur.execute("""
+        SELECT 1
+        FROM bans
+        WHERE user_id=?
+    """, (
+        user_id,
+    )).fetchone()
+
+    return row is not None
+
+def get_ticket_user(ticket_id):
+    row = cur.execute("""
+        SELECT user_id
+        FROM tickets
+        WHERE id=?
+    """, (
+        ticket_id,
+    )).fetchone()
+    return row[0] if row else None
 
 def delete_ticket(ticket_id):
     cur.execute("""

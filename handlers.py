@@ -1,13 +1,16 @@
 from telegram.ext import CommandHandler, MessageHandler, filters, CallbackQueryHandler
 from config import GROUP_ID, RESULT_CHAT_ID
 from keyboard import ticket_keyboard
-from database import create_ticket, set_group_message, close_ticket, delete_ticket, is_ticket_open, get_ticket, get_ticket_replies
+from database import create_ticket, set_group_message, is_banned, close_ticket, ban_user, get_ticket_user, delete_ticket, is_ticket_open, get_ticket, get_ticket_replies
 
 async def start(update, context):
 	await update.message.reply_text("testhello")
 
 async def redirect_msg(update, context):
 	user = update.effective_user
+	if is_banned(update.effective_user.id):
+		await update.message.reply_text("Вы забанены")
+		return
 
 	text = update.message.text_html
 	
@@ -40,6 +43,13 @@ async def button_handler(update, context):
 				parse_mode="HTML"
 			)
 		await query.message.reply_text(f"Тикет #{ticket_id} Закрыт и отправлен")
+	elif data.startswith("block_"):
+		ticket_id = int(data.split("_")[1])
+		user_id = get_ticket_user(ticket_id)
+		if user_id is not None:
+			ban_user(user_id, "spam")
+			await query.message.reply_text("Пользователь заблокирован")
+
 	elif data.startswith("delete_"):
 		ticket_id = int(data.split("_")[1])
 		delete_ticket(ticket_id)

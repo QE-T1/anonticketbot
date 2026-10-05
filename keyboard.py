@@ -15,4 +15,10 @@ def ticket_keyboard(ticket_id):
                 callback_data=f"delete_{ticket_id}"
             )
         ],
+        [
+            InlineKeyboardButton(
+                "БАН",
+                callback_data=f"block_{ticket_id}"
+            )
+        ]
     ])
