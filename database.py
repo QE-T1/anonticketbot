@@ -33,6 +33,13 @@ def init_db():
     )
     """)
 
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS users(
+        user_id INTEGER PRIMARY KEY,
+        nickname TEXT
+    )
+    """)
+
     db.commit()
 
 
@@ -118,6 +125,24 @@ def is_banned(user_id):
 
     return row is not None
 
+def save_reply(ticket_id, author_id, author_name, text):
+    cur.execute("""
+        INSERT INTO replies(
+            ticket_id,
+            author_id,
+            author_name,
+            text
+        )
+        VALUES(?,?,?,?)
+    """, (
+        ticket_id,
+        author_id,
+        author_name,
+        text
+    ))
+    db.commit()
+    return cur.lastrowid
+
 def get_ticket_user(ticket_id):
     row = cur.execute("""
         SELECT user_id
@@ -171,3 +196,27 @@ def get_ticket_replies(ticket_id):
     """, (
         ticket_id,
     )).fetchall()
+
+def delete_reply(reply_id):
+    cur.execute(
+        "DELETE FROM replies WHERE id=?",
+        (reply_id,)
+    )
+    db.commit()
+
+def set_nickname(user_id, nickname):
+    cur.execute("""
+        INSERT OR REPLACE INTO users(user_id, nickname)
+        VALUES(?,?)
+    """, (user_id, nickname))
+    db.commit()
+
+
+def get_nickname(user_id):
+    row = cur.execute("""
+        SELECT nickname
+        FROM users
+        WHERE user_id=?
+    """, (user_id,)).fetchone()
+
+    return row[0] if row else None
