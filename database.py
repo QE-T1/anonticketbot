@@ -4,6 +4,7 @@ import sqlite3
 db = sqlite3.connect("data.db", check_same_thread=False)
 cur = db.cursor()
 
+
 def init_db():
     cur.execute("""
     CREATE TABLE IF NOT EXISTS tickets(
@@ -33,6 +34,16 @@ def init_db():
     )
     """)
 
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS ticket_users(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ticket_id INTEGER,
+        user_id INTEGER,
+        user_number INTEGER,
+        UNIQUE(ticket_id, user_id)
+    )
+    """)
+	
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users(
         user_id INTEGER PRIMARY KEY,
@@ -166,6 +177,47 @@ def delete_ticket(ticket_id):
     """, (
         ticket_id, ))
 db.commit()
+
+def get_user_number(ticket_id, user_id):
+    row = cur.execute("""
+        SELECT user_number
+        FROM ticket_users
+        WHERE ticket_id=? AND user_id=?
+    """, (
+        ticket_id,
+        user_id
+    )).fetchone()
+
+    if row:
+        return row[0]
+
+    row = cur.execute("""
+        SELECT MAX(user_number)
+        FROM ticket_users
+        WHERE ticket_id=?
+    """, (
+        ticket_id,
+    )).fetchone()
+
+    last_number = row[0] or 0
+    new_number = last_number + 1
+
+    cur.execute("""
+        INSERT INTO ticket_users(
+            ticket_id,
+            user_id,
+            user_number
+        )
+        VALUES(?,?,?)
+    """, (
+        ticket_id,
+        user_id,
+        new_number
+    ))
+
+    db.commit()
+
+    return new_number
 
 def is_ticket_open(ticket_id):
     row = cur.execute("""
