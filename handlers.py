@@ -3,6 +3,7 @@ from config import GROUP_ID, RESULT_CHAT_ID
 from keyboard import ticket_keyboard, delreply_keyboard
 from database import create_ticket, set_group_message, is_banned, ticket_by_group_message, close_ticket, ban_user, get_ticket_user, delete_ticket, save_reply, is_ticket_open, get_ticket, get_ticket_replies, delete_reply, set_nickname, get_nickname
 from telegram import Update
+from html import escape
 
 WAIT_NICK = 1
 
@@ -165,7 +166,7 @@ def compile_ticket(ticket_id):
 	result+= "<b>Ответы:</b>\n\n"
 	for author, text in replies:
 		result += f"<code>----------------</code>\n"
-		result += f"<code>{author}</code>\n"
+		result += f"<code>{escape(author)}</code>\n"
 		result += f"<code>----------------</code>\n"
 		result += f"{text}\n"
 	return result
